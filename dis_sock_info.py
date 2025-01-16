@@ -19,7 +19,7 @@ def get_socket_summary():
         console.print(f"[bold red]{error_message}[/bold red]")
         return error_message
     except FileNotFoundError:
-        error_message = "Error: 'ss' command not found. Please install it."
+        error_message = "Error: 'ss' command not found. Please install iproute."
         console.print(f"[bold red]{error_message}[/bold red]")
         return error_message
     except Exception as e:
