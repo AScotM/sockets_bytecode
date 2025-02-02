@@ -1,19 +1,20 @@
 import subprocess
 import dis
+import io
+import contextlib
+import time
 from rich.console import Console
 from rich.panel import Panel
-from rich.syntax import Syntax
 from rich.progress import track
-import time
 
 console = Console()
 
 def get_socket_summary():
     console.print("[bold blue]Executing 'ss' command to fetch socket summary...[/bold blue]")
     try:
-        socket_summary = subprocess.check_output(['ss', '-s'], encoding='utf-8')
+        result = subprocess.run(['ss', '-s'], capture_output=True, text=True)
         console.print("[bold green]Success! Retrieved socket summary.[/bold green]")
-        return socket_summary
+        return result.stdout
     except subprocess.CalledProcessError as e:
         error_message = f"Command error: {e}"
         console.print(f"[bold red]{error_message}[/bold red]")
@@ -27,19 +28,24 @@ def get_socket_summary():
         console.print(f"[bold red]{error_message}[/bold red]")
         return error_message
 
+def get_bytecode(func):
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        dis.dis(func)
+    return buf.getvalue()
+
 def print_socket_summary():
     console.print(Panel("[bold yellow]Welcome to the Socket Summary Analyzer[/bold yellow]", style="bold magenta"))
     
-    for step in track(range(5), description="Preparing cinematic analysis..."):
-        time.sleep(0.3)  # Simulate a loading effect
+    for _ in track(range(5), description="Preparing cinematic analysis..."):
+        time.sleep(0.1)
     
     socket_summary = get_socket_summary()
     console.rule("[bold green]Socket Summary[/bold green]")
     console.print(Panel(socket_summary, title="Socket Details", style="cyan"), justify="center")
-
+    
     console.rule("[bold magenta]Bytecode Analysis[/bold magenta]")
-    bytecode = Syntax(dis.Bytecode(get_socket_summary).dis(), "python", theme="monokai", line_numbers=True)
-    console.print(bytecode)
+    console.print(get_bytecode(get_socket_summary))
 
 if __name__ == "__main__":
     print_socket_summary()
