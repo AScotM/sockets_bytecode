@@ -3,6 +3,7 @@ import dis
 import io
 import contextlib
 import logging
+import shutil
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
@@ -11,6 +12,11 @@ def get_socket_summary():
     """
     Executes the 'ss' command to fetch socket summary and returns the result.
     """
+    if shutil.which('ss') is None:
+        error_message = "Error: 'ss' command not found. Please install iproute."
+        logging.error(error_message)
+        return error_message
+    
     logging.info("Executing 'ss' command to fetch socket summary...")
     try:
         result = subprocess.run(['ss', '-s'], capture_output=True, text=True, check=True)
@@ -18,10 +24,6 @@ def get_socket_summary():
         return result.stdout
     except subprocess.CalledProcessError as e:
         error_message = f"Command error: {e}"
-        logging.error(error_message)
-        return error_message
-    except FileNotFoundError:
-        error_message = "Error: 'ss' command not found. Please install iproute."
         logging.error(error_message)
         return error_message
     except Exception as e:
